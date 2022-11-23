@@ -1,0 +1,59 @@
+version: '3'
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: php
+    container_name: carlib_app
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    depends_on:
+      - db
+    networks:
+      - carlib_network
+
+  webserver:
+    image: arm64v8/nginx
+    container_name: carlib_webserver
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - carlib_network
+
+  db:
+    image: mysql:8.0
+    container_name: carlib_db
+    restart: unless-stopped
+    tty: true
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./docker/volumes/dbdata:/var/lib/mysql
+      - ./docker/mysql/init.sql:/data/application/init.sql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: carlib
+      MYSQL_ROOT_PASSWORD: carlib
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - carlib_network
+
+networks:
+  carlib_network:
+    driver: bridge
