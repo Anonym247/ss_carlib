@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +13,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['prefix' => 'brands'], function () {
+    Route::get('/', [App\Http\Controllers\Api\BrandController::class, 'index']);
+    Route::post('/', [App\Http\Controllers\Api\BrandController::class, 'store']);
+    Route::put('/{id}', [App\Http\Controllers\Api\BrandController::class, 'update']);
+    Route::delete('/{id}', [App\Http\Controllers\Api\BrandController::class, 'delete']);
+});
+
+Route::group(['prefix' => 'orders'], function () {
+    Route::post('/', [App\Http\Controllers\Api\OrderController::class, 'checkout']);
 });
